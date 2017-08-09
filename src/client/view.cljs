@@ -8,10 +8,10 @@
 (defc of-change-coupon-num
   "修改卡券数量"
   [dispatch curr-change-coupon]
-  (let [{:coupon/keys [owner name change-num]} curr-change-coupon
+  (let [{:keys [member-name coupon-name change-num]} curr-change-coupon
         change-str (if (neg? change-num) change-num (str "+" change-num))]
     (cc/confirm-dialog "更改卡券数量"
-                       (str "确定给 " owner " 的 " name change-str "?")
+                       (str "确定给 " member-name " 的 " coupon-name change-str "?")
                        #(dispatch [:cancel-change-coupon-num])
                        #(dispatch [:confirm-change-coupon-num curr-change-coupon]))))
 
@@ -27,12 +27,11 @@
                 (when-not (= username member-name)
                   (ui/card-actions
                     (ui/raised-button {:primary  true
-                                       :on-click #(dispatch [:confirm-change-coupon-num group-id member-name name 1])}
+                                       :on-click #(dispatch [:change-coupon-num group-id member-name id name 1])}
                                       "INC+1")
                     (ui/raised-button {:secondary true
-                                       :on-click  #(dispatch [:confirm-change-coupon-num group-id member-name name -1])}
+                                       :on-click  #(dispatch [:change-coupon-num group-id member-name id name -1])}
                                       "DEC-1"))))))])
-
 
 (defc of-group-info
   "群组信息页面"
@@ -61,23 +60,19 @@
        (when curr-change-coupon
          (of-change-coupon-num dispatch curr-change-coupon))])))
 
-(comment)
-
-(def model
-  {:user       #:user{:name "柳朕"}
-   :module-states {:curr-group-open? true}
-   :curr-group #:group{:name    "柳朕&姜琳琳"
-                       :id      123456
-                       :members {"柳朕"  #:user{:name  "柳朕"
-                                              :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 1}
-                                                      "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 2}}}
-                                 "姜琳琳" #:user{:name  "姜琳琳"
-                                              :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 2}
-                                                      "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 3}}}}}
-   :curr-change-coupon #:coupon{:owner "姜琳琳" :id 1234 :name "洗衣券" :change-num -1}
-   :dispatch #(js/alert %)
-   }
-
-  )
-(rum/mount (of-model model) (.getElementById js/document "app"))
+(comment
+  (def model
+    {:user               #:user{:name "柳朕"}
+     :module-states      {:curr-group-open? true}
+     :curr-group         #:group{:name    "柳朕&姜琳琳"
+                                 :id      123456
+                                 :members {"柳朕"  #:user{:name    "柳朕"
+                                                        :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 1}
+                                                                  "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 2}}}
+                                           "姜琳琳" #:user{:name    "姜琳琳"
+                                                        :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 2}
+                                                                  "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 3}}}}}
+     :curr-change-coupon {:group-id 12345 :member-name "姜琳琳" :coupon-id 1234 :coupon-name "洗衣券" :change-num -1}
+     :dispatch           #(js/alert %)})
+  (rum/mount (of-model model) (.getElementById js/document "app")))
 

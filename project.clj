@@ -5,6 +5,9 @@
                  ;; web server
                  [bidi "2.1.1" :exclusions [ring/ring-core]]
                  [ring "1.6.1"]
+                 ;; mysql数据库
+                 [org.clojure/java.jdbc "0.2.2"]
+                 [mysql/mysql-connector-java "5.1.6"]
                  ;; json log
                  [org.clojure/tools.logging "0.4.0"]
                  [cheshire "5.7.1"]
@@ -38,7 +41,7 @@
                                       [{:id           "dev"
                                         :source-paths ["src"]
                                         :figwheel     {:open-urls ["http://localhost:3449/index.html"]
-                                                       ;:on-jsload "client.main/-main"
+                                                       :on-jsload "client.main/-main"
                                                        }
                                         :compiler     {:main                 client.view
                                                        :asset-path           "js/out"
