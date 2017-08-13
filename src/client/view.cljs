@@ -68,7 +68,7 @@
                                  :id      123456
                                  :members {"柳朕"  #:user{:name    "柳朕"
                                                         :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 1}
-                                                                  "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 2}}}
+                                                                   "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 2}}}
                                            "姜琳琳" #:user{:name    "姜琳琳"
                                                         :coupons {"洗衣券" #:coupon{:id 1234 :name "洗衣券" :desc "包括洗、晾衣服" :num 2}
                                                                   "洗碗券" #:coupon{:id 2345 :name "洗碗券" :desc "包括洗碗、擦灶台" :num 3}}}}}

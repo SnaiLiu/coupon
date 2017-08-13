@@ -1,6 +1,7 @@
 (ns server.dao
   "数据库操作"
-  (:require [clojure.java.jdbc :as sql])
+  (:require [clojure.java.jdbc :as sql]
+            [server.utils :as u])
   (:import [java.util UUID]))
 
 
@@ -87,15 +88,34 @@
 (defn group-base-info
   "查询群组信息"
   [group-id]
-  (sql/with-query-results rs ["select * from groups where id=?" group-id]
-                          (first (vec rs))))
+  (->> (sql/with-query-results rs ["select * from groups where id=?" group-id]
+                               (first (vec rs)))
+       (u/add-ns "group")))
+
+(defn group-coupons
+  "群组有的卡券"
+  [group-id]
+  (->> (sql/with-query-results rs ["select id, name, description from coupons where group_id=?;" group-id]
+                               (vec rs))
+       (mapv #(u/add-ns "coupon" %))))
 
 (defn group-members
   "查询群组成员列表"
   [group-id]
-  (sql/with-query-results rs ["select username from groups_users where group_id=?"
-                               group-id]
-                          (vec rs)))
+  (->> (sql/with-query-results rs ["select username from groups_users where group_id=?"
+                                 group-id]
+                             (vec rs))
+       (mapv (fn [user]
+               {:user/name (:username user)}))))
+
+(defn user-coupons
+  "查询用户的奖券"
+  [username]
+  (->> (sql/with-query-results rs ["select users_coupons.num, coupons.id, coupons.description, coupons.name
+  from users_coupons left join coupons on users_coupons.coupon_id = coupons.id
+  where users_coupons.username=?" username]
+                               (vec rs))
+       (mapv #(u/add-ns "coupon" %))))
 
 (defn group-info-by-id
   "查询群组信息"
@@ -103,36 +123,6 @@
   (let [base-info (group-base-info group-id)
         members (group-members group-id)]
     (assoc base-info :members members)))
-
-#_(defn add-coupons
-  [group-id]
-  (let [members (group-members group-id)
-        update-time (java.sql.Timestamp. (System/currentTimeMillis))
-        c-laundry [(str (UUID/randomUUID)) "洗衣券" "包括洗、晾衣服。" group-id update-time]
-        c-dish [(str (UUID/randomUUID)) "洗碗券" "包括洗碗、擦灶台。" group-id update-time]
-        c-cook [(str (UUID/randomUUID)) "烹饪券" "最少2个菜。" group-id update-time]
-        c-mop [(str (UUID/randomUUID)) "拖地券" "包括扫地、拖地。" group-id update-time]
-        c-massage [(str (UUID/randomUUID)) "按摩券" "全身按摩。" group-id update-time]
-        c-clean [(str (UUID/randomUUID)) "整理券" "整理杂物、擦家具。" group-id update-time]
-        c-pet [(str (UUID/randomUUID)) "动物美容券" "替娘口洗澡、吹干。" group-id update-time]
-        c-hhh [(str (UUID/randomUUID)) "娱乐生活券" "嘿嘿嘿。" group-id update-time]
-        c-absolution [(str (UUID/randomUUID)) "免罪券" "立马不生气。" group-id update-time]
-        c-outdoor [(str (UUID/randomUUID)) "出门券" "使用前提醒对方洗澡。" group-id update-time]
-        c-sports [(str (UUID/randomUUID)) "运动券" "打球、健身等，持续一小时。" group-id update-time]
-        c-study [(str (UUID/randomUUID)) "学习券" "每券学习2小时。" group-id update-time]
-        c-game [(str (UUID/randomUUID)) "游戏休闲券" "包含各类娱乐游戏。" group-id update-time]
-        c-shopping [(str (UUID/randomUUID)) "买买买券" "女方独有。" group-id update-time]
-        c-company [(str (UUID/randomUUID)) "陪伴券" "陪伴学习2小时。" group-id update-time]
-        insert-row (fn [usernames coupon]
-                     (dorun (map #(apply sql/insert-rows
-                                         [:users_coupons [(:username %) (first coupon) 0 update-time]])
-                                 usernames)))]
-    (sql/insert-rows :coupons
-                     c-laundry c-dish c-cook c-mop c-massage c-clean c-pet c-hhh c-absolution
-                     c-outdoor c-sports c-study c-game c-shopping c-company)
-    (dorun (map #(insert-row members %)
-                [c-laundry c-dish c-cook c-mop c-massage c-clean c-pet c-hhh c-absolution
-                 c-outdoor c-sports c-study c-game c-shopping c-company]))))
 
 (comment
   (defn add-coupons
