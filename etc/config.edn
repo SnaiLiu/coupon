@@ -1,0 +1,7 @@
+{:outter-server {:host "127.0.0.1" :port 8088 :join? false}
+ :db-conn {:class-name  "com.mysql.jdbc.Driver"
+           :subprotocol "mysql"
+           :subname     "//localhost:3306/coupon?useUnicode=true&characterEncoding=utf8"
+           :user        "root"
+           :password    "111aaa"}
+ }

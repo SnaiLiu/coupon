@@ -1,10 +1,13 @@
-(defproject coupon "0.1.0-SNAPSHOT"
+(defproject coupon "0.1.0"
   :description "酷嘭！！——生活的'优惠券'"
   :url "http://coupon.thinkou.com/index.html"
   :dependencies [[org.clojure/clojure "1.9.0-alpha17"]
                  ;; web server
                  [bidi "2.1.1" :exclusions [ring/ring-core]]
                  [ring "1.6.1"]
+                 ;; mysql数据库
+                 [org.clojure/java.jdbc "0.2.2"]
+                 [mysql/mysql-connector-java "5.1.6"]
                  ;; json log
                  [org.clojure/tools.logging "0.4.0"]
                  [cheshire "5.7.1"]
@@ -12,9 +15,11 @@
                  [net.logstash.logback/logstash-logback-encoder "4.10"]]
 
   :profiles {:dev {:resource-paths ["etc" "resources"]
-                   :plugins        [[lein-cljsbuild "1.1.6" :exclusions [[org.clojure/clojure]]]
+                   :plugins        [[s3-wagon-private "1.2.0"]
+                                    [lein-cljsbuild "1.1.6" :exclusions [[org.clojure/clojure]]]
                                     [lein-figwheel "0.5.10"]]
                    :dependencies   [[org.clojure/clojure "1.9.0-alpha17"]
+
 
                                     [figwheel-sidecar "0.5.10"]
                                     [com.cemerick/piggieback "0.2.1"]
@@ -30,14 +35,15 @@
 
                                     [cljs-ajax "0.6.0"]]
                    :source-paths  ["src"]
-                   :clean-targets ^{:protect false} ["resources/public/scripts"
+                   :clean-targets ^{:protect false} ["resources/public/js"
                                                      :target-path]
                    :cljsbuild        {:builds
                                       [{:id           "dev"
                                         :source-paths ["src"]
                                         :figwheel     {:open-urls ["http://localhost:3449/index.html"]
-                                                       :on-jsload "client.main/-main"}
-                                        :compiler     {:main                 client.main
+                                                       :on-jsload "client.main/-main"
+                                                       }
+                                        :compiler     {:main                 client.view
                                                        :asset-path           "js/out"
                                                        :output-to            "resources/public/js/coupon_0.1.0.js"
                                                        :output-dir           "resources/public/js/out"
@@ -50,4 +56,10 @@
                                                        :main          client.main
                                                        :optimizations :advanced
                                                        :pretty-print  false}}]}}}
+  :repositories [["snapshots" {:url        "s3p://volcano-maven/snapshots"
+                               :username   :env/aws_access_key_id
+                               :passphrase :env/aws_secret_key}]
+                 ["releases" {:url        "s3p://volcano-maven/releases"
+                              :username   :env/aws_access_key_id
+                              :passphrase :env/aws_secret_key}]]
   )
