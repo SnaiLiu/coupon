@@ -19,6 +19,6 @@
   (if (= :success result)
     (let [data
           (case event-id
-            :group-info resp)]
+            (:update-user-coupon :group-info) resp)]
       {:result :success :data data})
     {:result :failed :data {:msg (gen-failed-msg reason) :reason reason}}))

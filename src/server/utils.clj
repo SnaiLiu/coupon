@@ -51,6 +51,6 @@
         content-type (get headers "content-type")]
     (when content-type
       (cond
-        (clojure.string/includes? content-type "application/edn") (str->edn body-str)
+        (clojure.string/includes? content-type "text/edn") (str->edn body-str)
         :default
         body-str))))

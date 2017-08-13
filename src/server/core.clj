@@ -15,15 +15,20 @@
          (assoc group-base-info :group/members)
          (assoc event-package :resp))))
 
-#_(defn update-user-coupons
+(defn update-user-coupon
   "更新用户的卡券"
-  [event-package db-data {:keys [group-id member-name coupon-id coupon-name change-num] :as params}]
-  (let [])
-  (assoc event-package :resp params :db params))
+  [event-package db-data {:keys [group-id username member-name coupon-id change-num] :as params}]
+  (let [group-members (->> (db-data :group-members group-id)
+                           (map :user/name)
+                           set)]
+    (if (and (group-members username) (group-members member-name) (not= username member-name))
+      (assoc event-package :resp params :db params)
+      (assoc event-package :result :failed :reason :have-no-access))))
 
 (defn core-handle
   "核心逻辑处理模块"
   [{:keys [event-id] :as event-package} db-data params]
   (case event-id
     :group-info (group-info event-package db-data params)
+    :update-user-coupon (update-user-coupon event-package db-data params)
     (assoc event-package :result :failed :reason :invalid-event)))

@@ -124,6 +124,16 @@
         members (group-members group-id)]
     (assoc base-info :members members)))
 
+(defn update-user-coupon
+  "修改用户券数量"
+  [username coupon-id {:keys [num] :as update-data}]
+  (sql/transaction
+    (let [curr-num (sql/with-query-results rs ["select num from users_coupons where username=? and coupon_id=?" username coupon-id]
+                                           (:num (first (vec rs))))]
+      (sql/update-values :users_coupons
+                         ["username=? and coupon_id=?" username coupon-id]
+                         {:num (+ curr-num num)}))))
+
 (comment
   (defn add-coupons
     [group-id]
