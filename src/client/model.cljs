@@ -2,7 +2,7 @@
   (:require [client.core :as c]))
 
 (def init-model
-  {:db {:user        nil}})
+  {:db {:user #:user{:name nil}}})
 
 (def event-handlers
   "事件处理函数"

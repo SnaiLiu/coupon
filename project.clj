@@ -53,7 +53,7 @@
                                        {:id           "min"
                                         :source-paths ["src"]
                                         :compiler     {:output-to     "resources/public/js/coupon_0.1.0.js"
-                                                       :main          client.view
+                                                       :main          client.main
                                                        :optimizations :advanced
                                                        :pretty-print  false}}]}}}
   :repositories [["snapshots" {:url        "s3p://volcano-maven/snapshots"

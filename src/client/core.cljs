@@ -13,10 +13,13 @@
 (defn request-change-coupon-num
   "请求更改卡券"
   [{:keys [group-id coupon-id member-name coupon-name change-num] :as curr-change-coupon}]
-  {:method     :put
-   :uri        "/coupons"
-   :params     curr-change-coupon
-   :resp-event :change-coupon-num-resp})
+  (let [username (if (= member-name "柳朕")
+                   "姜琳琳"
+                   "柳朕")]
+    {:method     :put
+     :uri        "/coupons"
+     :params     (assoc curr-change-coupon :username username)
+     :resp-event :change-coupon-num-resp}))
 
 ;;==============================
 ;; core handlers
@@ -29,7 +32,6 @@
 (defn group-info-resp
   "群组信息回复"
   [{:keys [db] :as app-data} group]
-  (println "group-info-resp")
   (-> app-data
       (assoc-in [:db :curr-group] group)))
 
@@ -60,9 +62,25 @@
   (-> app-data
       (assoc :http (request-change-coupon-num (:curr-change-coupon db)))))
 
+(defn update-coupon-num
+  [coupons coupon-id change-num]
+  (reduce (fn [result {:coupon/keys [id num] :as coupon}]
+            (if (= id coupon-id)
+              (conj result (update coupon :coupon/num + change-num))
+              (conj result coupon)))
+          [] coupons))
+
+(defn update-member-coupon
+  [members member-name coupon-id change-num]
+  (reduce (fn [result {:user/keys [name coupons] :as member}]
+            (if (= member-name name)
+              (let [new-coupons (update-coupon-num coupons coupon-id change-num)]
+                (conj result (assoc member :user/coupons new-coupons)))
+              (conj result member)))
+          [] members))
+
 (defn change-coupon-num-resp
   [{:keys [db] :as app-data} {:keys [group-id coupon-id member-name coupon-name change-num]}]
   (-> app-data
-      (update-in [:db :curr-group :group/members member-name
-                  :user/coupons coupon-name :coupon/num] + change-num)
+      (update-in [:db :curr-group :group/members] #(update-member-coupon % member-name coupon-id change-num))
       (assoc-in [:db :curr-change-coupon] nil)))
