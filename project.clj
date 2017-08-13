@@ -1,4 +1,4 @@
-(defproject coupon "0.1.0-SNAPSHOT"
+(defproject coupon "0.1.0"
   :description "酷嘭！！——生活的'优惠券'"
   :url "http://coupon.thinkou.com/index.html"
   :dependencies [[org.clojure/clojure "1.9.0-alpha17"]
