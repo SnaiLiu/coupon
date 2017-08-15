@@ -174,7 +174,7 @@
           c-company [(str (UUID/randomUUID)) "陪伴券" "陪伴学习2小时。" group-id update-time]
           insert-row (fn [usernames coupon]
                        (dorun (map #(apply sql/insert-rows
-                                           [:users_coupons [(:username %) (first coupon) 0 update-time]])
+                                           [:users_coupons [(:user/name %) (first coupon) 0 update-time]])
                                    usernames)))]
       (sql/insert-rows :coupons
                        c-laundry c-dish c-cook c-mop c-massage c-clean c-pet c-hhh c-absolution
@@ -205,6 +205,6 @@
     (exe-sql #(add-group-user group-id "姜琳琳" (now-time-fn)))
     ;; 查询群组信息
     (prn "group-info~~~~" (exe-sql #(group-info-by-id group-id)))
-    ;;;
-    ;(exe-sql #(add-coupons group-id))
+    ;;
+    (exe-sql #(add-coupons group-id))
   ))
