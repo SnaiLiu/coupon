@@ -156,7 +156,6 @@
   (defn add-coupons
     [group-id]
     (let [members (group-members group-id)
-          _ (prn "members === " members)
           update-time (java.sql.Timestamp. (System/currentTimeMillis))
           c-laundry [(str (UUID/randomUUID)) "洗衣券" "包括洗、晾衣服。" group-id update-time]
           c-dish [(str (UUID/randomUUID)) "洗碗券" "包括洗碗、擦灶台。" group-id update-time]
