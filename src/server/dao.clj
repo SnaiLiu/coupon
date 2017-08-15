@@ -8,16 +8,23 @@
 (defn tables-schema
   "定义表结构"
   []
-  {;; 用户表
+  {
+   ;; 用户表
    :users
-   [[:name "varchar(20)" "PRIMARY KEY" "NOT NULL UNIQUE"]                 ;;用户名
+   [[:name "varchar(20)" "PRIMARY KEY" "NOT NULL UNIQUE"]   ;;用户名
+    [:sexual "INT" "NOT NULL"]                               ;;性别
+    [:birthday "datetime"]                                  ;;生日
     [:update_time "varchar(60)"]]                           ;;更新时间
+
    ;; 群组表
    :groups
-   [[:id "varchar(36)" "PRIMARY KEY"]                            ;;id(uuid)
+   [[:id "varchar(36)" "PRIMARY KEY"]                       ;;id(uuid)
     [:name "varchar(20)" "NOT NULL"]                        ;;群组名
+    [:chairman "varchar(20)" "NOT NULL"]
     [:description "varchar(200)"]                           ;;群组描述
-    [:update_time "varchar(60)"]]                           ;;更新时间
+    [:update_time "varchar(60)"]
+    ["FOREIGN KEY(chairman) REFERENCES users(name)"]]                           ;;更新时间
+
    ;; 卡券表
    :coupons
    [[:id "varchar(36)" "PRIMARY KEY"]                            ;;id
@@ -45,21 +52,31 @@
   [tables-schema]
   (dorun (map (fn [[table-name table-def]]
                 (try (sql/drop-table table-name)
-                     (catch Exception e))
+                     (catch Exception e)
+                      )
                 (apply sql/create-table (concat [table-name] table-def [ :table-spec "DEFAULT CHARSET=utf8"])))
               tables-schema)))
 
+(defn clear-database
+  "清空数据库"
+  []
+  (dorun (map (fn [table-name]
+                (try (sql/drop-table table-name)
+                     (catch Exception e)))
+              [:groups :users :coupons :users_coupons :groups_users]))
+  )
+
 (defn add-group
   "添加一个群组"
-  [group-id group-name group-description update-time]
+  [group-id group-name chairman group-description update-time]
   (sql/insert-rows :groups
-                     ;[:id :name :description :update_time]
-                     [group-id group-name group-description update-time]))
+                     ;[:id :name :charman :description :update_time]
+                     [group-id group-name chairman group-description update-time]))
 
 (defn add-user
   "添加一个用户"
-  [username update-time]
-  (sql/insert-rows :users [username update-time]))
+  [username sexual birthday update-time]
+  (sql/insert-rows :users [username sexual birthday update-time]))
 
 (defn add-group-user
   "添加群组-用户关系"
@@ -90,6 +107,7 @@
   [group-id]
   (->> (sql/with-query-results rs ["select * from groups where id=?" group-id]
                                (first (vec rs)))
+       (#(do (prn "grou-base-info ==== " %) %))
        (u/add-ns "group")))
 
 (defn group-coupons
@@ -173,18 +191,20 @@
         now-time-fn (fn [] (java.sql.Timestamp. (System/currentTimeMillis)))
         group-id (str (UUID/randomUUID))
         exe-sql (mk-sql-executor mysql-db)]
-    ;; 创建表
+    ; 清空数据库
+    (exe-sql #(clear-database))
+    ; 创建表
     (exe-sql #(init-database (tables-schema)))
-    ;; 添加用户
-    (exe-sql #(add-user "柳朕" (now-time-fn)))
-    (exe-sql #(add-user "姜琳琳" (now-time-fn)))
-    ;; 创建群组
-    (exe-sql #(add-group group-id "柳朕&姜琳琳" "相亲相爱的一家人" (now-time-fn)))
+    ; 添加用户
+    (exe-sql #(add-user "柳朕" 1 "1990-04-07" (now-time-fn)))
+    (exe-sql #(add-user "姜琳琳" 0 "1992-09-23" (now-time-fn)))
+    ; 创建群组
+    (exe-sql #(add-group group-id "柳朕&姜琳琳" "姜琳琳" "相亲相爱的一家人" (now-time-fn)))
     ;; 群组添加成员
     (exe-sql #(add-group-user group-id "柳朕" (now-time-fn)))
     (exe-sql #(add-group-user group-id "姜琳琳" (now-time-fn)))
     ;; 查询群组信息
     (prn "group-info~~~~" (exe-sql #(group-info-by-id group-id)))
-    ;;
-    (exe-sql #(add-coupons group-id))
+    ;;;
+    ;(exe-sql #(add-coupons group-id))
   ))
