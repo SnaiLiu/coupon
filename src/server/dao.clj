@@ -156,6 +156,7 @@
   (defn add-coupons
     [group-id]
     (let [members (group-members group-id)
+          _ (prn "members === " members)
           update-time (java.sql.Timestamp. (System/currentTimeMillis))
           c-laundry [(str (UUID/randomUUID)) "洗衣券" "包括洗、晾衣服。" group-id update-time]
           c-dish [(str (UUID/randomUUID)) "洗碗券" "包括洗碗、擦灶台。" group-id update-time]
@@ -174,7 +175,7 @@
           c-company [(str (UUID/randomUUID)) "陪伴券" "陪伴学习2小时。" group-id update-time]
           insert-row (fn [usernames coupon]
                        (dorun (map #(apply sql/insert-rows
-                                           [:users_coupons [(:username %) (first coupon) 0 update-time]])
+                                           [:users_coupons [(:user/name %) (first coupon) 0 update-time]])
                                    usernames)))]
       (sql/insert-rows :coupons
                        c-laundry c-dish c-cook c-mop c-massage c-clean c-pet c-hhh c-absolution
@@ -205,6 +206,6 @@
     (exe-sql #(add-group-user group-id "姜琳琳" (now-time-fn)))
     ;; 查询群组信息
     (prn "group-info~~~~" (exe-sql #(group-info-by-id group-id)))
-    ;;;
-    ;(exe-sql #(add-coupons group-id))
+    ;;
+    (exe-sql #(add-coupons group-id))
   ))
